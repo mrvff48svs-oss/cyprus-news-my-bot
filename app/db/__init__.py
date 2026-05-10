@@ -1,4 +1,4 @@
-# Railway отдаёт Postgres URL в формате postgresql:// или postgres://
+µ# Railway отдаёт Postgres URL в формате postgresql:// или postgres://
 # Но async engine требует asyncpg-драйвер. Заменяем на правильный.
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
