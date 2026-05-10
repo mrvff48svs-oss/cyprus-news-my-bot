@@ -3,6 +3,18 @@ DATABASE_URL = os.getenv(
     "sqlite+aiosqlite:///./data/cyprus_news.db"
 )
 
+# Railway отдаёт Postgres URL в формате postgresql:// или postgres://
+# Но наш async engine требует asyncpg-драйвер. Заменяем на правильный.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+engine = create_async_engine(DATABASE_URL, echo=False, future=True)DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite+aiosqlite:///./data/cyprus_news.db"
+)
+
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)"""Подключение к БД и асинхронные сессии."""
 import os
 from contextlib import asynccontextmanager
