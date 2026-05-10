@@ -1,4 +1,9 @@
-"""Подключение к БД и асинхронные сессии."""
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite+aiosqlite:///./data/cyprus_news.db"
+)
+
+engine = create_async_engine(DATABASE_URL, echo=False, future=True)"""Подключение к БД и асинхронные сессии."""
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
