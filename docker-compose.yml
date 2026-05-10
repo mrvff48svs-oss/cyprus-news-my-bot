@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cyprus_news
+      POSTGRES_USER: cyprus
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "cyprus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cyprus:${DB_PASSWORD:-changeme}@db:5432/cyprus_news
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-4-5}
+      MAIN_TELEGRAM_BOT_TOKEN: ${MAIN_TELEGRAM_BOT_TOKEN}
+      MAIN_TELEGRAM_CHANNEL_ID: ${MAIN_TELEGRAM_CHANNEL_ID}
+    command: python -m app.orchestrator
+    restart: unless-stopped
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cyprus:${DB_PASSWORD:-changeme}@db:5432/cyprus_news
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
